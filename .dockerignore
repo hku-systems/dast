@@ -1,0 +1,11 @@
+*.py
+*.yml
+.vscode
+/bin/*
+/build/*
+/check_environemnt/*
+/log/*
+/results*
+/test
+/tla
+/tmp/*

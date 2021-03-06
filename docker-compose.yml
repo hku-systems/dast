@@ -1,0 +1,37 @@
+version: '3'
+services:
+    slaves:
+        image: edc
+        deploy:
+            replicas: ${N}
+        command: >
+            /usr/sbin/sshd -D
+        volumes:
+            - nfs-data:/janus/
+        cap_add:
+            - NET_ADMIN
+    master:
+        depends_on: 
+            - slaves
+        image: edc
+        volumes:
+            - nfs-data:/janus/
+        command: >
+            bash -c "cd /janus
+            && ./scan_all.sh edc-cluster_slaves ${N}
+            && ssh edc-cluster_slaves_1 'ping edc-cluster_slaves_2 -c 1'
+            && ./tc_all.sh eth0 edc-cluster_master_1 edc-cluster_slaves ${N}
+            && ping edc-cluster_slaves_1 -c 1
+            && ssh edc-cluster_slaves_1 'ping edc-cluster_slaves_2 -c 1'
+            && ssh edc-cluster_slaves_1 'ping edc-cluster_slaves_1 -c 1'
+            && ./xs.sh"
+        cap_add:
+            - NET_ADMIN
+
+volumes:
+    nfs-data:
+        driver: local
+        driver_opts:
+            type: nfs
+            device: ":/opt/share_cluster/edc-cluster"
+            o: "addr=10.22.1.1,nolock,soft,rw"

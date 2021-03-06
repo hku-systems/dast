@@ -1,0 +1,18 @@
+version: '3'
+services:
+    slaves:
+        image: edc
+        deploy:
+            replicas: 1
+        command: >
+                bash -c "cd /janus && ./waf configure build -t"
+        volumes:
+            - nfs-data:/janus/
+
+volumes:
+    nfs-data:
+        driver: local
+        driver_opts:
+            type: nfs
+            device: ":/opt/share_cluster/edc-cluster"
+            o: "addr=10.22.1.1,nolock,soft,rw"

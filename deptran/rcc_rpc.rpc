@@ -1,0 +1,523 @@
+namespace rococo;
+
+abstract service MultiPaxos {
+
+  defer Forward(ContainerCommand cmd);
+
+  defer Prepare(uint64_t slot,
+                uint64_t ballot |
+                uint64_t max_ballot);
+
+  defer Accept(uint64_t slot,
+               uint64_t ballot,
+               ContainerCommand cmd |
+               uint64_t max_ballot);
+
+  defer Decide(uint64_t slot,
+               uint64_t ballot,
+               ContainerCommand cmd);
+}
+
+// below is for 2PL and OCC
+abstract service Classic {
+  defer Dispatch(vector<SimpleCommand> cmd |
+                 i32 res,
+                 TxnOutput output);
+
+  defer Prepare(i64 tid, 
+                vector<i32> sids | 
+                i32 res);
+
+  defer Commit(i64 tid | i32 res);
+
+  defer Abort(i64 tid | i32 res);
+
+  defer UpgradeEpoch(uint32_t curr_epoch |
+                     int32_t res)
+
+  defer TruncateEpoch(uint32_t old_epoch)
+
+  // input: contains many pieces, each piece consist of
+  // | <i32 p_type> <i64 pid> <i32 input_size> <i32 max_output_size> 
+  // <input_0> <input_1> ... |
+  // output: contains many pieces, each piece consist of
+  // | <i32 res> <i32 output_size> <output_0> <output_1> ... |
+  // below is for what?
+
+  defer rpc_null( | );
+  //  defer Prepare();
+  defer TapirAccept(uint64_t cmd_id,
+                    uint64_t ballot,
+	                int32_t decision);
+  // works as 2PC prepare on a paxos fast-accept
+  defer TapirFastAccept(uint64_t cmd_id,
+                        vector<SimpleCommand> txn_cmds |
+                        i32 res);
+  // works as a 2PC commit/abort with a paxos decision
+  defer TapirDecide(uint64_t cmd_id, i32 commit);
+  
+
+  defer RccDispatch(vector<SimpleCommand> cmd |
+                    i32 res,
+                    TxnOutput output,
+                    RccGraph graph);
+
+  defer RccFinish(cmdid_t id,
+               RccGraph |
+               map<uint32_t, map<int32_t, Value>> outputs);
+
+  defer RccInquire(epoch_t epoch,
+                   txnid_t txn_id |
+                   RccGraph res);
+
+  defer RccDispatchRo(SimpleCommand cmd |
+                      map<i32, Value> output);
+
+
+  defer BrqDispatch(vector<SimpleCommand> cmd |
+                    i32 res,
+                    TxnOutput output,
+                    Marshallable ret_graph);
+
+  defer BrqCommit(cmdid_t id,
+                  Marshallable graph |
+                  int32_t res,
+                  TxnOutput output);
+
+  defer BrqCommitWoGraph(cmdid_t id |
+                         int32_t res,
+                         TxnOutput output);
+
+  defer BrqInquire(epoch_t epoch, 
+                   txnid_t txn_id |
+                   Marshallable ret_graph);
+
+  defer BrqPreAccept(cmdid_t txn_id,
+                     vector<SimpleCommand> cmd,
+                     Marshallable graph |
+                     i32 res,
+                     Marshallable ret_graph);
+
+  defer BrqPreAcceptWoGraph(cmdid_t txn_id,
+                            vector<SimpleCommand> cmd |
+                            i32 res,
+                            Marshallable ret_graph);
+
+  defer BrqAccept(cmdid_t txn_id,
+                  ballot_t ballot,
+                  Marshallable graph |
+                  i32 res);
+
+  defer BrqSendOutput(ChronosSendOutputReq chr_req |
+                         ChronosSendOutputRes chr_res);
+
+
+
+  defer ChronosSubmitLocal(vector<SimpleCommand> cmd,
+                        ChronosSubmitReq req |
+                        ChronosSubmitRes chr_res,
+                        TxnOutput output);
+
+  defer ChronosSubmitTxn(map<uint32_t, vector<SimpleCommand>> cmds_by_par,
+                        ChronosSubmitReq req,
+                        i32 is_local |
+                        ChronosSubmitRes chr_res,
+                        TxnOutput output);
+
+  defer DastPrepareCRT(vector<SimpleCommand> cmds,
+                       DastPrepareCRTReq req |
+                       i32 res);
+
+
+
+  defer ChronosSubmitCRT(map<uint32_t, map<uint32_t, vector<SimpleCommand>>> cmds_by_region,
+                        ChronosSubmitReq req |
+                        ChronosSubmitRes chr_res,
+                        TxnOutput output);
+
+  defer ChronosStoreLocal(vector<SimpleCommand> cmd,
+                        ChronosStoreLocalReq req |
+                        ChronosStoreLocalRes chr_res);
+
+
+  defer ChronosProposeRemote(vector<SimpleCommand> cmd,
+                        ChronosProposeRemoteReq req |
+                        ChronosProposeRemoteRes chr_res);
+
+  defer ChronosStoreRemote(vector<SimpleCommand> cmd,
+                        ChronosStoreRemoteReq req |
+                        ChronosStoreRemoteRes chr_res);
+
+  defer ChronosProposeLocal(vector<SimpleCommand> cmd,
+                        DastProposeLocalReq req |
+                        ChronosProposeLocalRes chr_res);
+
+
+  defer DastRemotePrepared(DastRemotePreparedReq req |
+                        DastRemotePreparedRes chr_res);
+
+  defer DastNotiCommit(DastNotiCommitReq req|
+                       i32 res);
+
+
+//  defer ChronosLocalSync(ChronosLocalSyncReq req |
+//                         ChronosLocalSyncRes res);
+
+  defer DastIRSync(DastIRSyncReq req |
+                   i32 res);
+
+  defer DastNotiCRT(DastNotiCRTReq req|
+                   i32 res);
+
+  defer ChronosDistExe(ChronosDistExeReq chr_req |
+                         ChronosDistExeRes chr_res,
+                         TxnOutput output);
+
+  defer ChronosSendOutput(ChronosSendOutputReq chr_req |
+                         ChronosSendOutputRes chr_res);
+
+  defer OVStore(cmdid_t txn_id,
+                  vector<SimpleCommand> cmd,
+                  OVStoreReq ov_req |
+                  i32 res,
+                  OVStoreRes ov_res);
+
+
+  defer OVCreateTs(cmdid_t txn_id |
+                    i64 timestamp,
+                    i16 site_id);
+
+  defer OVStoredRemoveTs (cmdid_t txn_id,
+                  i64 timestamp,
+                  i16 site_id |
+                  int32_t res);
+
+  defer OVExecute(cmdid_t id,
+                    OVExecuteReq req |
+                    int32_t res,
+                    OVExecuteRes ov_res,
+                    TxnOutput output);
+
+  defer OVPublish(i64 dc_timestamp,
+                  i16 dc_site_id |
+                  i64 ret_timestamp,
+                  i16 ret_site_id);
+
+  defer OVExchange (string dcname,
+                i64 dvw_timestamp,
+                i16 dvw_site_id |
+                i64 ret_timestamp,
+                i16 ret_site_id);
+
+  defer OVDispatch(vector<SimpleCommand> cmd |
+                        i32 res,
+                        TxnOutput output);
+
+  defer SlogInsertDistributed(vector<SimpleCommand> cmd,
+                         uint64_t index,
+                         vector<parid_t> touched_pars,
+                         siteid_t handler_site,
+                         uint64_t txn_id |
+                         i32 res);
+
+
+  defer SlogReplicateLogLocal(vector<SimpleCommand> cmd,
+                              uint64_t txn_id,
+                              uint64_t index,
+                              uint64_t commit_index |
+                              i32 res);
+
+  defer SlogSubmitDistributed(map<uint32_t, vector<SimpleCommand>> cmds_by_par |
+                        TxnOutput output);
+
+  defer SlogSendBatchRemote(vector<pair<txnid_t, TxnOutput>> batch,
+                           parid_t my_par_id |
+                           i32 res);
+
+  //after code factor
+  defer SlogSendBatch(uint64_t start_index,
+                      vector<pair<txnid_t, vector<SimpleCommand>>> cmds,
+                      vector<pair<txnid_t, siteid_t>> coord_sites |
+                      i32 res);
+
+  defer SlogSendTxnOutput(txnid_t txn_id,
+                          parid_t par_id,
+                          TxnOutput output |
+                          i32 res);
+  defer SlogSendDepValues(ChronosSendOutputReq chr_req |
+                         ChronosSendOutputRes chr_res);
+
+  defer SlogSubmitTxn (map<parid_t, vector<SimpleCommand>> cmds_by_par,
+                        i32 is_irt |
+                        TxnOutput output);
+}
+
+abstract service DastManager{
+  defer PrepareCRT(map<uint32_t, vector<SimpleCommand>> cmds_by_par,
+                   ChronosProposeRemoteReq req |
+                   ChronosProposeRemoteRes chr_res);
+
+  defer NotiWait(DastNotiManagerWaitReq req|
+                 i32 res);
+}
+
+abstract service SlogRaft {
+  defer SlogRaftSubmit(map<uint32_t, vector<SimpleCommand>> cmds_by_par,
+                       siteid_t handler_site |
+                       i32 res);
+
+  defer RaftAppendEntries(map<uint32_t, vector<SimpleCommand>> cmds_by_par |
+                          i32 res);
+}
+
+abstract service SlogRegionManger {
+  defer SendRmIRT(map<uint32_t, vector<SimpleCommand>> cmds_by_par,
+                       siteid_t handler_site |
+                       i32 res);
+
+  defer RmReplicate(map<uint32_t, vector<SimpleCommand>> cmds_by_par,
+                           siteid_t hander_site |
+                          i32 res);
+
+
+  defer SlogSendOrderedCRT(map<parid_t, vector<SimpleCommand>> cmds_by_par,
+                           uint64_t index,
+                           siteid_t handler_site |
+                           i32 res);
+}
+// Below is for statistics
+
+struct ValueTimesPair {
+    i64 value;
+    i64 times;
+}
+
+struct TxnInfoRes {
+    i32 start_txn;  // total number of started txns
+    i32 total_txn;  // total number of finished txns
+    i32 total_try;  // total number of tries finished
+    i32 commit_txn; // number of commit transactions
+    i32 num_exhausted; // number of txns that reached the retry limit
+    vector<double> this_irt_latency; // latencies started && finish in this period
+    vector<double> this_crt_latency; // latencies started && finish in this period
+    vector<double> last_irt_latency; // latencies started in last period, finish in this period
+    vector<double> last_crt_latency; // latencies started in last period, finish in this period
+    vector<double> attempt_latency; // interval latencies for each attempts
+    vector<double> interval_irt_latency; // latencies finish in this period
+    vector<double> interval_crt_latency; // latencies finish in this period
+    vector<double> all_interval_latency; // latencies finish in this period include txn's with exhausted retries
+    vector<i32> num_try;
+}
+
+struct ServerResponse {
+    map<string, ValueTimesPair> statistics;
+    double cpu_util;
+    i64 r_cnt_sum;
+    i64 r_cnt_num;
+    i64 r_sz_sum;
+    i64 r_sz_num;
+}
+
+struct ClientResponse  {
+    map<i32, TxnInfoRes> txn_info; // statistics for each txn
+    i64 run_sec;    // running time in seconds
+    i64 run_nsec;   // running time in nano seconds
+    i64 period_sec;    // running time in seconds
+    i64 period_nsec;   // running time in nano seconds
+    i32 is_finish;  // if client finishs
+    i64 n_asking;   // asking finish request count
+}
+
+abstract service ServerControl {
+    server_shutdown ( | );
+    server_ready ( | i32 res);
+    server_heart_beat_with_data ( | ServerResponse res);
+    server_heart_beat ( | );
+}
+
+struct TxnDispatchRequest {
+    i32 id;
+    i32 txn_type;
+    vector<Value> input;
+}
+
+struct TxnDispatchResponse {
+}
+
+abstract service ClientControl {
+    client_get_txn_names( | map<i32, string> txn_names);
+    client_shutdown ( | );
+    client_force_stop ( | );
+    client_response ( | ClientResponse res);
+    client_ready ( | i32 res);
+    defer client_ready_block ( | i32 res);
+    client_start ( | );
+    defer DispatchTxn(TxnDispatchRequest req | TxnReply result);
+}
+
+
+//xs todo: move to another beter place
+
+struct ChrTxnInfo{
+  i64 txn_id;
+  chr_ts_t ts;
+  uint16_t region_leader;  // who decide whether to execute this txn
+}
+
+
+struct ChronosSubmitReq{
+}
+
+struct DastPrepareCRTReq{
+  chr_ts_t anticipated_ts;
+  uint16_t shard_leader;  //who sends result
+  uint16_t coord_site;
+  i32 input_ready;
+}
+
+struct DastNotiCRTReq{
+  txnid_t txn_id;
+  chr_ts_t anticipated_ts;
+  std::set<siteid_t> touched_sites;
+}
+
+struct DastNotiCommitReq{
+    txnid_t txn_id;
+    chr_ts_t original_ts;
+    i32 need_input_wait;
+    chr_ts_t new_ts;
+    std::set<siteid_t> touched_sites;
+}
+
+struct DastNotiManagerWaitReq{
+    txnid_t txn_id;
+    chr_ts_t original_ts;
+    i32 need_input_wait;
+    chr_ts_t new_ts;
+    std::set<siteid_t> touched_sites;
+}
+
+struct DastIRSyncReq{
+    uint16_t my_site;
+    chr_ts_t txn_ts;
+    vector<ChrTxnInfo> my_txns;
+    chr_ts_t delivered_ts
+}
+
+
+
+struct ChronosSubmitRes{
+}
+
+struct ChronosDistExeReq{
+  uint64_t txn_id;
+  chr_ts_t decision_ts;
+}
+
+struct ChronosDistExeRes{
+  i32 is_region_leader; //If is region leader, contains result
+}
+
+struct ChronosStoreLocalReq{
+   chr_ts_t txn_ts;
+   vector<ChrTxnInfo> piggy_my_txns;
+   chr_ts_t piggy_delivered_ts;
+}
+
+
+struct ChronosStoreLocalRes{
+   chr_ts_t piggy_my_ts;
+   vector<ChrTxnInfo> piggy_my_pending_txns;
+   chr_ts_t piggy_delivered_ts;
+}
+
+struct ChronosProposeRemoteReq{
+   chr_ts_t src_ts;
+   map<parid_t, i32> par_input_ready;
+}
+
+struct ChronosProposeRemoteRes{
+   chr_ts_t anticipated_ts;
+}
+
+struct ChronosStoreRemoteReq{
+   uint16_t handler_site;
+   uint16_t region_leader;
+   chr_ts_t anticipated_ts;
+   //piggyback info
+//   chr_ts_t piggy_my_ts
+//   chr_ts_t piggy_clear_ts;
+//   vector<ChrTxnInfo> piggy_my_pending_txns;
+}
+
+struct ChronosStoreRemoteRes{
+//   chr_ts_t piggy_my_ts;
+//   chr_ts_t piggy_clear_ts;
+//   vector<ChrTxnInfo> piggy_my_pending_txns;
+}
+
+struct DastRemotePreparedReq{
+   uint64_t txn_id;
+   uint16_t my_site_id;
+   uint32_t my_partition_id;
+   uint16_t shard_manager;
+   chr_ts_t anticipated_ts;
+}
+
+struct DastRemotePreparedRes{
+}
+
+struct DastProposeLocalReq{
+
+   uint16_t coord_site;
+   uint16_t shard_leader_site;
+   chr_ts_t txn_ts;
+
+}
+
+
+struct ChronosProposeLocalReq{
+   chr_ts_t txn_anticipated_ts;
+// Piggyback sync
+// chr_ts_t piggy_my_ts;
+// chr_ts_t piggy_clear_ts;
+// vector<ChrTxnInfo> piggy_my_pending_txns;
+}
+
+struct ChronosProposeLocalRes{
+   uint16_t my_site_id;
+   //Piggyback infor for sync
+
+ //  chr_ts_t piggy_my_ts;
+ //  chr_ts_t piggy_clear_ts;
+ //  vector<ChrTxnInfo> piggy_my_pending_txns;
+}
+
+struct ChronosSendOutputReq{
+    txnid_t txn_id;
+    std::map<varid_t, Value> var_values;
+}
+
+struct ChronosSendOutputRes{
+
+}
+
+
+
+struct OVStoreReq {
+    i64 ts;
+    i16 site_id;
+}
+
+struct OVStoreRes {
+    i64 ts;
+}
+
+struct OVExecuteReq{
+
+}
+
+struct OVExecuteRes{
+
+}
+

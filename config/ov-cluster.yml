@@ -1,0 +1,53 @@
+
+site:
+  server: # each line is a partition, the first is the master site_name:port
+    - ["s0:8000", "s1:8001", "s2:8002"]
+    - ["s3:8100", "s4:8101", "s5:8102"]
+    - ["s6:8200", "s7:8201", "s8:8202"]
+    - ["s9:8300", "s10:8301", "s11:8302"]
+  client: # each line is a partition
+    - ["c1", "c5", "c9"]
+    - ["c2", "c6"]
+    - ["c3", "c7"]
+    - ["c4", "c8"]
+# site_name - process_name map
+process:
+  s0: processD
+  s1: processA
+  s2: processB
+  s3: processC
+  s4: processD
+  s5: processA
+  s6: processB
+  s7: processC
+  s8: processD
+  s9: processA
+  s10: processB
+  s11: processC
+  c1: processA
+  c2: processB
+  c3: processC
+  c4: processD
+  c5: processA # two ciient site in one process will cause assert failed, only testing python scritp
+  c6: processB
+  c7: processC
+  c8: processD
+  
+
+host:
+  processA: 10.22.1.7
+  processB: 10.22.1.17
+  processC: 10.22.1.18
+  processD: 10.22.1.7
+
+datacenter:
+  10.22.1.7: dc1
+  10.22.1.17: dc2
+  10.22.1.18: dc2
+
+#ocean-vista paramaters
+
+ovparams:
+  aggregate_interval_ms: 5
+  gossip_interval_ms: 10
+  clock_drift_ms: 5  # to differentiate processes on the same host, they will drifted by (-x, x), set to 0 if site on different servers
