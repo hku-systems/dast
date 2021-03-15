@@ -163,9 +163,9 @@ This experiment tests DAST using the TPC-C-Payment transaction (the one with val
   
 + Expected results and explanation: 
    * With the ratio of CRTs increasing, DAST's throughput decreases because CRTs' finish time is much longer than IRTs (the only variable is the ratio of CRTs; the number of clients is fixed).
-   * The median-latency and tail-latency of DAST remains low. 
+   * The median-latency and tail-latency of IRTs remains low. 
    * The median-latency and tail-latency of CRTs may increase at first, but will drop then. Note that the increase may not manifest in some setups. The CRT latency is affected by two opposite factors: (1) a larger ratio of CRTs causes more "stretches", which may delay the execution of subsequent CRTs (but not IRTs), and (2) with the CRT ratio increasing, the total load of the system decreases, leading to lower latency.
-  *  We did not make major claims on baseline systems because this trial is to stress-test DAST's limitation. The performance of baseline systems should be affected by the similar two factors as DAST. 
+  *  We did not make major claims on DAST v.s. baseline systems because this trial is to test DAST's limitation. The performance of baseline systems should be affected by the similar two factors as DAST. 
 
 ### Experiment 3: Performance with different conflict rates. 
 
@@ -182,7 +182,7 @@ This experiments test DAST use different conflict rates (`zipf` coefficient) in 
 
 + Expected results: 
     + DAST's lines are flat in the figures. This is because DAST uses timestamps to order all transactions accessing the same shard (i.e., SMR-based), regardless of whether they conflict.
-    + We did not make major claims on baseline systems; their experiments can be omitted. SLOG's performance should be stable, similar to DAST. The performance of Tapir and Janus drop with higher conflict rates, as they can enter fast path only if the conflict rate is not high (admitted in their paper). 
+    + We did not make major claims on DAST v.s. baseline systems; their experiments can be omitted. SLOG's performance should be stable, similar to DAST. The performance of Tapir and Janus drop with higher conflict rates, as they can enter fast path only if the conflict rate is not high (admitted in their paper). 
 
 ### Experiment 4: Scalability to the number of regions.
 
@@ -196,13 +196,13 @@ This experiment tests DAST's scalability to number of regions.
 + Output: a pdf file named `results/data-scalability.pdf` containing five figures.
 
 + Paper claims and expected results:
-    + DAST's throughput increases proportionally to the number of regions because the throughput is mainly contributed by IRTs in each region (irrelevant to the number of regions).
+    + DAST's throughput increases proportionally to the number of regions because the *total throughput is mainly contributed by IRTs in each region* (irrelevant to the number of regions).
     +  DAST's latency is roughly stable. 
 
 + Misc:
     + We used AWS to conducted the scalability evaluation (with up to 100 c5.24xlarge instances). We missed to report it in our submission version but have added it to our camera ready version. 
     + The Docker swam engine crashed twice when doing the experiment. 
-    + With limited resource, you can re-construct the deployment with a smaller region scale (e.g., 2 shards per region). The result should show the same trends.
+    + With limited resource, you can re-construct the deployment with a smaller region size (e.g., 2 shards per region). The result should show the same trends.
   
 ### Experiment 5: DAST's robustness on unstable cross-region networks. 
 
