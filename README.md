@@ -77,6 +77,8 @@ Prerequisite:
 Create the overlay network with (assuming that `10.55.0.0/16` is available).
       
       docker network create -d overlay --attachable --subnet=10.55.0.0/16 dast_network
+      
+**=> (For artifact evaluation only) start from this step if you are using our cluster.**       
 
 Then, please add the IP of your machines to the `hosts.yml` file. (Note the format, the little `-` is for identifying array items in yaml files). Also, please define your experiment scale at `exp_config.py`.
 
